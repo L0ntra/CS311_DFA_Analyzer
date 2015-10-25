@@ -1,10 +1,10 @@
 #File Template
 #+------------------+          ##     {w | w states and ends with a}     ##
 #|a\t   b\t   c\n   | Single characters in the alphabet seporated by tabs line ends with a return
-#|1\t   3\t   3,f\n | State 0: a -> State 1, b -> State 3, c -> State 3, Accept state = false
-#|2\t   1\t   1,f\n | State 1: a -> State 2, b -> State 1, c -> State 1, Accept state = false
-#|2\t   1\t   1,t\n | State 2: a -> State 2, b -> State 1, c -> State 1, Accept state = true
-#|3\t   3\t   3,f\n | State 3: a -> State 3, b -> State 3, c -> State 3, Accept state = false
+#|1\t   3\t   3,f\n | State 0 (S0): a -> S1, b -> S3, c -> S3, Accept state = false
+#|2\t   1\t   1,f\n | State 1 (S1): a -> S2, b -> S1, c -> S1, Accept state = false
+#|2\t   1\t   1,t\n | State 2 (S2): a -> S2, b -> S1, c -> S1, Accept state = true
+#|3\t   3\t   3,f\n | State 3 (S3): a -> S3, b -> S3, c -> S3, Accept state = false
 #+------------------+
 
 class DFA
@@ -17,72 +17,63 @@ class DFA
   end
 
 # Read in the file wrapper
-def read(file_name)
-  i = 0  #counter
-  file = File.new(file_name)
-  begin
-    @alphabet[i] = file.readchar
-    i += 1
-  end while file.readchar == "\t"
-
-  rread(file, 0)
-  return
-end
-
-
-#!!! PROBLEM IS IN HERE  ##INFINITE LOOP
+  def read(file_name)
+    i = 0  #counter
+    file = File.new(file_name)
+    begin
+      @alphabet[i] = file.readchar
+      i += 1
+    end while file.readchar == "\t"
+    rread(file, 0)
+    return
+  end
+  
 #read each state in the DFA recursively
 ##file == file object
 ##state == current line of the state starting at 0
-
-def rread(file, i)
-  delim = nil           #Holds the next char for delim checking
-  temp = nil            #Holds the current value being written to
-  temparray = Array.new #Array for the paths of the current state
-  j = 0                 #counter
-#Read in all the things from the line
-  begin
-  temp = file.readchar
-
+  def rread(file, i)
+    delim = nil           #Holds the next char for delim checking
+    temp = nil            #Holds the current value being written to
+    temparray = Array.new #Array for the paths of the current state
+    j = 0                 #counter
+  #Read in all the things from the line
+    begin
+    temp = file.readchar
 #Loop until \t or , is found then continue as normal
 #This allows for DFAs larger than 10 states
-    begin
-    delim = file.readchar
-      if delim == "\t" || delim == ","
-        break
-      else
-        temp = temp + delim
-      end
-    end while true
-    temparray[j] = temp.to_i #Convert to int and write to temporary array
+      begin
+      delim = file.readchar
+        if delim == "\t" || delim == ","
+          break
+        else
+          temp = temp + delim
+        end
+      end while true
+      temparray[j] = temp.to_i #Convert to int and write to temporary array
 
-    if delim == ","         #',' seporates for the accept state value
-      delim = file.readchar #read in the accept state value
-      file.readchar         #Read in the \n
-      #Recursion
-      if !file.eof
-        rread(file, i+1)
-      else
-        @accept = Array.new(i)
-        @state_table= Array.new(i) {Array.new(j+1)}
-      end
-      
+      if delim == ","         #',' seporates for the accept state value
+        delim = file.readchar #read in the accept state value
+        file.readchar         #Read in the \n
+        #Recursion
+        if !file.eof
+          rread(file, i+1)
+        else
+          @accept = Array.new(i)
+          @state_table= Array.new(i) {Array.new(j+1)}
+        end
       #write to the state table on recursive collapse
-
-      @state_table[i] = temparray
-      if delim == "t"
-        @accept[i] = true
-      else 
-        if delim == "f"
-          @accept[i] = false
-	end
+        @state_table[i] = temparray
+        if delim == "t"
+          @accept[i] = true
+        else 
+          if delim == "f"
+            @accept[i] = false
+	  end
+        end
       end
-    end
-    j += 1 #next col in the state table
-  end while !file.eof
-end
-
-
+      j += 1 #next col in the state table
+    end while !file.eof
+  end
 
 # Matches each character in the user's string to the alphabet
 # and creates an array of the matching letter's indexs in
@@ -124,7 +115,6 @@ end
   def accept?(state)
     return @accept[state]
   end
-
 end #CLASS
 
 # simple function to ask if the user would like to do something again
@@ -134,9 +124,8 @@ def again?
   yn = gets
   if yn[0] == "y"
     return true
-  else
-    return false
   end
+return false #Not a 'y' they must have meant 'n'
 end
 
 
@@ -164,6 +153,4 @@ begin
   user_string = nil
 
 end while again? == true
-
-system("cls")
 __END__
